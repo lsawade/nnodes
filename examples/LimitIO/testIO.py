@@ -2,7 +2,8 @@ import os
 from nnodes import Node
 
 def workflow(node: Node):
-
+    node.rm('tempfilelist.txt')
+    node.rm('events')
     node.concurrent = True
     print('workflow running')
 
@@ -23,6 +24,16 @@ def subsetwf(node: Node):
 
 def subsetchunk(node: Node):
 
+    node.concurrent = False
+
+    node.add(subsetchunk_sub)
+
+    if len(node.chunks) > 1:
+        node.parent.add(subsetchunk, chunks=node.chunks[1:])
+
+
+def subsetchunk_sub(node: Node):
+
     node.concurrent = True
 
     if len(node.chunks) >= 1:
@@ -34,11 +45,9 @@ def subsetchunk(node: Node):
 
             # Make event file
             eventfile = os.path.join('events', event_id)
-            node.add(f'touch {eventfile} && sleep 30', event_id=event_id,
-                     name=f'create-{eventfile}')
+            node.add(f'sleep 130 && touch {eventfile}', event_id=event_id,
+                    name=f'create-{eventfile}')
 
-    if len(node.chunks) > 1:
-        node.parent.add(subsetchunk, chunks=node.chunks[1:])
 
 
 def eventloop(node: Node):
@@ -78,7 +87,7 @@ def eventcheck(node: Node):
 
     if len(events) > 0:
         print(events)
-        child_node = node.add('sleep 15', name='eventcheck-sleep')
+        child_node = node.add('sleep 90', name='eventcheck-sleep')
         child_node.add(update_parent, events=events)
 
 def update_parent(node: Node):
@@ -87,7 +96,7 @@ def update_parent(node: Node):
 def inversion(node: Node):
 
     print('Inverting event: ', node.events)
-    node.add('sleep 60', name='inversion-sleep')
+    node.add('sleep 120', name='inversion-sleep')
 
 
 def chunkfunc(sequence, n: int):

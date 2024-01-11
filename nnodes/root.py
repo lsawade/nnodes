@@ -50,7 +50,7 @@ class Root(Node):
 
     # dict from config.toml
     _config: dict
-    
+
     @property
     def cache(self) -> dict:
         return self._cache
@@ -58,21 +58,21 @@ class Root(Node):
     @property
     def job(self) -> Job:
         return self._job
-    
+
     @property
     def mpi(self) -> MPI:
         return tp.cast('MPI', self._mpi)
-    
+
     def init(self, /, mpidir: str | None = None):
         """Restore state."""
         if hasattr(self, '_job'):
             # root already initialized
             return
-        
+
         if mpidir is None and self.has('root.pickle'):
             # restore from save file
             self.__setstate__(self.load('root.pickle'))
-        
+
         elif self.has('config.toml'):
             # load configuration
             config = self.load('config.toml')
@@ -85,7 +85,7 @@ class Root(Node):
                 'ping_interval': 60,
                 'default_retry': 0,
                 'retry_delay': 1,
-                'async_save': True
+                'async_save': False
             }
 
             for key in defaults:
@@ -127,17 +127,17 @@ class Root(Node):
         if self.job.inqueue and self.job.failed and not self.job.aborted \
             and not self.job.debug and not self.job.paused and self.job.auto_requeue != False:
             self.job.requeue()
-    
+
     def checkpoint(self):
         """Save with a certain limit on frequency."""
         global _last_save
 
         if self.save_interval and time() - self.save_interval < _last_save:
             return
-        
+
         _last_save = time()
         self.save(self.async_save)
-    
+
     def save(self, async_save: bool = False):
         """Save state from event loop."""
         if self.job._signaled:
@@ -147,18 +147,18 @@ class Root(Node):
         if self.mpi:
             # root can only be saved from main process
             raise RuntimeError('cannot save root from MPI process')
-        
+
         self._init['_ping'] = time()
 
         if async_save:
             asyncio.create_task(self._save_with_thread())
-        
+
         else:
             if _saving_in_thread is not None:
                 _saving_in_thread.join()
 
             self._dump()
-    
+
     async def _save_with_thread(self):
         """Save in a separete thread."""
         global _last_save
@@ -173,7 +173,7 @@ class Root(Node):
         while t.is_alive():
             await asyncio.sleep(1)
             _last_save = time()
-        
+
         if _saving_in_thread is t:
             _saving_in_thread = None
 

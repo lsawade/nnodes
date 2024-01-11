@@ -302,10 +302,10 @@ class Node(Directory):
 
         elif isinstance(self.default_retry, int):
             retry = self.default_retry
-        
+
         if isinstance(self.retry_delay, (int, float)):
             retry_delay = self.retry_delay
-        
+
         if retry < 0:
             retry = 0
 
@@ -487,7 +487,8 @@ class Node(Directory):
         cwd: str | None = None, data: dict | None = None,
         timeout: tp.Literal['auto'] | float | None = 'auto',
         ontimeout: tp.Literal['raise'] | tp.Callable[[], None] | None = 'raise',
-        priority: int = 0, exec_args: tp.Dict[tp.Type[Job], str] | None = None, retry: int | None = None) -> Node:
+        priority: int = 0, exec_args: tp.Dict[tp.Type[Job], str] | None = None,
+        retry: int | None = None) -> Node:
         """Add a child node that executed an MPI task.
 
         Args:

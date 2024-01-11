@@ -340,10 +340,12 @@ class Andes(Slurm):
     # number of GPUs per node
     gpus_per_node = 0
 
-    def mpiexec(self, cmd: str, nprocs: int, cpus_per_proc: int = 1,
-                *args, **kwargs):
+    #task, nprocs, cpus_per_proc, gpus_per_proc, mps, args_cmd
+    def mpiexec(self, cmd: str, nprocs: int, cpus_per_proc: int = 1, gpus_per_proc: int = 0,
+                mps: int | None = None, args: str | None = None):
         """Get the command to call MPI."""
-        return  f'srun -n {nprocs} -c {cpus_per_proc} --exclusive --cpu-bind=cores {cmd}'
+        # mps, gpus_per_proc are unused
+        return  f'srun -n {nprocs} -c {cpus_per_proc} --cpu-bind=cores {args} {cmd}'
 
 
 class Traverse(Slurm):
