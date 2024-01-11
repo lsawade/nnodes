@@ -406,6 +406,7 @@ class Node(Directory):
 
                 while len(self._executing_async) > 0:
                     toexec = self._executing_async
+                    exclude += [item[1] for item in self._executing_async]
                     self._executing_async = []
                     await asyncio.gather(*(item[0] for item in toexec))
 
